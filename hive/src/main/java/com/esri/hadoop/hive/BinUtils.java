@@ -1,5 +1,8 @@
 package com.esri.hadoop.hive;
 
+import java.util.ArrayList;
+import org.apache.hadoop.io.LongWritable;
+
 import com.esri.core.geometry.Envelope;
 
 public class BinUtils {
@@ -72,5 +75,43 @@ public class BinUtils {
 		double ymin = ymax - binSize;
 		
 		envelope.setCoords(xmin, ymin, xmax, ymax);
+	}
+	
+	/**
+	 * Gets bin IDs from an envelope.
+	 * 
+	 * @Envelope envelope
+	 * @return
+	 */
+	public ArrayList<LongWritable> getIds(Envelope envelope) {
+		
+		
+		ArrayList<LongWritable> result = new ArrayList<LongWritable>();
+
+		double maxx=envelope.getXMax();
+		double maxy=envelope.getYMax();
+
+		double minx=envelope.getXMin();
+		double miny=envelope.getYMin();		
+		
+		double down1 = (extentMax - maxy) / binSize;
+		double over1 = (maxx - extentMin) / binSize;
+
+		double down2 = (extentMax - miny) / binSize;
+		double over2 = (minx - extentMin) / binSize;
+		
+		double mindown = down1 > down2 ? down2 : down1;
+		double maxdown = down1 > down2 ? down1 : down2;
+
+		double minover = over1 > over2 ? over2 : over1;
+		double maxover = over1 > over2 ? over1 : over2;
+		
+        for(long i=(long) mindown;i<=maxdown;i++){
+        	for(long j=(long) minover;j<=maxover;j++){
+        		result.add(new LongWritable((i * numCols) + j));
+        	}
+        }
+		
+		return result;
 	}
 }
